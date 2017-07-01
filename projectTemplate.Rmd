@@ -32,23 +32,88 @@ str(reds)
 # Univariate Analysis
 
 ### What is the structure of your dataset?
-all the variables are numerical variables, there is no factor variable.
+all the variables are numerical variables, there is no factor variable. 
 ```{r echo=FALSE, Univariate_Plots}
 str(reds)
 ```
 ### What is/are the main feature(s) of interest in your dataset?
+Many of the variables have normal distribution and many of the variable are left skewed.
 ```{r}
 # distribute of acidity
 ggplot(aes(fixed.acidity),data=reds)+
-  geom_histogram(binwidth = 0.1)
+  geom_histogram(binwidth = 0.1)+
+  scale_x_continuous(breaks = seq(4,16,1))
 ```
 
 ```{r}
 # frequency polygon of volatile acidity.
 ggplot(aes(volatile.acidity),data=reds)+
-  geom_freqpoly()
+  geom_freqpoly(binwidth = 0.03)+
+  scale_x_continuous(breaks = seq(0,1.7,0.1))
 ```
 
+```{r}
+# normal distribution of quality.
+ggplot(aes(quality), data = reds)+
+  geom_histogram(binwidth=1)+
+  scale_x_continuous(breaks = seq(3,8,1))
+```
+
+```{r}
+# left skewed distribution of residual sugar.
+ggplot(aes(residual.sugar),data= reds)+
+  geom_histogram(binwidth = 0.1)+
+  scale_x_continuous(breaks = seq(0,16,1), limits = c(0,7))
+```
+
+```{r}
+# residual sugar log()
+ggplot(aes(residual.sugar),data=reds)+
+  geom_histogram(binwidth = 0.05)+
+  scale_x_log10(breaks = seq(0,16,1))
+```
+
+```{r}
+# transformed chlorides
+ggplot(aes(chlorides),data = reds)+
+  geom_histogram(binwidth = 0.01)+
+  scale_x_log10(breaks = seq(0,3,0.1))
+```
+
+
+### What other features in the dataset do you think will help support your investigation into your feature(s) of interest?
+
+
+### Did you create any new variables from existing variables in the dataset?
+I created two new variables:
+1. the ratio of fixed acidity and volatile acidity
+2. the percentage of free sulfur dioxide 
+
+```{r}
+# acidity ratio
+reds$acidity.ratio <- reds$fixed.acidity/reds$volatile.acidity
+
+# free sulfur dioxide percentage
+reds$sulfur.dioxide.per <- reds$free.sulfur.dioxide/reds$total.sulfur.dioxide
+```
+
+
+### Of the features you investigated, were there any unusual distributions? Did you perform any operations on the data to tidy, adjust, or change the form of the data? If so, why did you do this?
+There are some left skewed distribution in the data, so I did some transformation or limitation to the x scale to make it normal distribution.
+
+
+# Bivariate Plots Section
+```{r echo=FALSE, Bivariate_Plots}
+ggpairs(reds, 
+  lower = list(continuous = wrap("points", shape = I('.'))), 
+  upper = list(combo = wrap("box", outlier.shape = I('.'))))
+ggsave('ggpairs.png')
+```
+
+# Bivariate Analysis
+
+### Talk about some of the relationships you observed in this part of the investigation. How did the feature(s) of interest vary with other features in the dataset?
+from the plot above it can be seen that there are variables possibly have 
 
 ```{r}
 # boxplot of fixed acidity by quality
@@ -62,24 +127,6 @@ ggplot(aes(quality,volatile.acidity), data = reds_f)+
   geom_boxplot()
 ```
 
-### What other features in the dataset do you think will help support your investigation into your feature(s) of interest?
-
-### Did you create any new variables from existing variables in the dataset?
-
-### Of the features you investigated, were there any unusual distributions? Did you perform any operations on the data to tidy, adjust, or change the form of the data? If so, why did you do this?
-
-
-
-# Bivariate Plots Section
-```{r echo=FALSE, Bivariate_Plots}
-#ggpairs(reds, params = c(shape = I('.'), outlier.shape = I('.')))
-
-```
-
-# Bivariate Analysis
-
-### Talk about some of the relationships you observed in this part of the investigation. How did the feature(s) of interest vary with other features in the dataset?
-
 ### Did you observe any interesting relationships between the other features (not the main feature(s) of interest)?
 
 ### What was the strongest relationship you found?
@@ -90,10 +137,7 @@ ggplot(aes(quality,volatile.acidity), data = reds_f)+
 # Multivariate Plots Section
 
 ```{r echo=FALSE, Multivariate_Plots}
-ggpairs(reds, 
-  lower = list(continuous = wrap("points", shape = I('.'))), 
-  upper = list(combo = wrap("box", outlier.shape = I('.'))))
-ggsave('ggpairs.png')
+
 ```
 
 # Multivariate Analysis
