@@ -1,5 +1,10 @@
-# A study of the red wine
-####by Hao Su
+---
+title: "A study of red wine"
+author: "Hao Su"
+date: "2017/6/29"
+output: html_document
+---
+
 ========================================================
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
@@ -14,6 +19,7 @@ library(ggplot2)
 library(GGally)
 library(scales)
 library(memisc)
+library(gridExtra)
 ```
 
 ```{r echo=FALSE, Load_the_Data}
@@ -26,70 +32,84 @@ reds_f$quality <- as.factor(reds_f$quality)
 
 # Univariate Plots Section
 ```{r echo=FALSE, Univariate_Plots}
-str(reds)
+
 ```
 
 # Univariate Analysis
 
-### What is the structure of your dataset?
-all the variables are numerical variables, there is no factor variable. 
-```{r echo=FALSE, Univariate_Plots}
+### Dataset structure
+First thing I noticed is that all the variables are numerical variables, there is no factor variable. 
+```{r echo=FALSE}
 str(reds)
+summary(reds)
 ```
-### What is/are the main feature(s) of interest in your dataset?
-Many of the variables have normal distribution and many of the variable are left skewed.
-```{r}
+### Main features of interest in the red wine dataset
+There are some variables with great gap between the minimum and max values. I will probably trim the outliers when visualizing these variables.
+Most of the variables have normal distribution, but many of them are left skewed. I will do some tranformation when visualizing so they can be bell shaped. These distribution can be a help to my analysis because they all comply to the normal distribution.
+```{r echo=FALSE}
 # distribute of acidity
 ggplot(aes(fixed.acidity),data=reds)+
   geom_histogram(binwidth = 0.1)+
-  scale_x_continuous(breaks = seq(4,16,1))
+  scale_x_continuous(breaks = seq(4,16,1))+
+  labs(title = "Distribute of Fixed Acidity", x= "fixed acidity")
 ```
 
 ```{r}
 # frequency polygon of volatile acidity.
 ggplot(aes(volatile.acidity),data=reds)+
   geom_freqpoly(binwidth = 0.03)+
-  scale_x_continuous(breaks = seq(0,1.7,0.1))
+  scale_x_continuous(breaks = seq(0,1.7,0.1))+
+  labs(title = "Frequency Polygon of Volatile Acidity", x = "volatile acidity")
 ```
 
 ```{r}
 # normal distribution of quality.
 ggplot(aes(quality), data = reds)+
   geom_histogram(binwidth=1)+
-  scale_x_continuous(breaks = seq(3,8,1))
+  scale_x_continuous(breaks = seq(3,8,1))+
+  labs(title = "Normal Distribution of Quality", x = "quality")
 ```
 
-```{r}
+```{r echo= FALSE}
 # left skewed distribution of residual sugar.
-ggplot(aes(residual.sugar),data= reds)+
+sugar1 <- ggplot(aes(residual.sugar),data= reds)+
   geom_histogram(binwidth = 0.1)+
-  scale_x_continuous(breaks = seq(0,16,1), limits = c(0,7))
-```
+  scale_x_continuous(breaks = seq(0,16,1))+ #, limits = c(0,7))+
+  labs(title="Left Skewed Distribution of Residual Sugar", x="residual sugar")
 
-```{r}
-# residual sugar log()
-ggplot(aes(residual.sugar),data=reds)+
+# residual sugar log10
+sugar2 <- ggplot(aes(residual.sugar),data=reds)+
   geom_histogram(binwidth = 0.05)+
-  scale_x_log10(breaks = seq(0,16,1))
+  scale_x_log10(breaks = seq(0,16,1))+
+  labs(title="residual sugar log10", x="residual sugar")
+
+grid.arrange(sugar1,sugar2)
 ```
 
-```{r}
-# transformed chlorides
-ggplot(aes(chlorides),data = reds)+
+
+
+```{r echo=FALSE}
+# distribute of chlorides
+chlorides1 <- ggplot(aes(chlorides),data = reds)+
   geom_histogram(binwidth = 0.01)+
-  scale_x_log10(breaks = seq(0,3,0.1))
+  scale_x_continuous(breaks = seq(0,3,0.1))+
+  labs(title = "Chlorides Distribution", x = "Chlorides")
+
+# chlorides distribution log10
+chlorides2 <- ggplot(aes(chlorides),data = reds)+
+  geom_histogram(binwidth = 0.05)+
+  scale_x_log10(breaks = seq(0,3,0.1))+
+  labs(title = "Chlorides Distribution log10", x = "Chlorides")
+
+grid.arrange(chlorides1, chlorides2)
 ```
 
-
-### What other features in the dataset do you think will help support your investigation into your feature(s) of interest?
-
-
-### Did you create any new variables from existing variables in the dataset?
+### New variables are created.
 I created two new variables:
-1. the ratio of fixed acidity and volatile acidity
-2. the percentage of free sulfur dioxide 
+1. the ratio of fixed acidity and volatile acidity. *fixed.acidity/volatile.acidity*
+2. the percentage of free sulfur dioxide. *free.sulfur.dioxide/total.sulfur.dioxide*
 
-```{r}
+```{r echo=FALSE}
 # acidity ratio
 reds$acidity.ratio <- reds$fixed.acidity/reds$volatile.acidity
 
@@ -98,41 +118,86 @@ reds$sulfur.dioxide.per <- reds$free.sulfur.dioxide/reds$total.sulfur.dioxide
 ```
 
 
-### Of the features you investigated, were there any unusual distributions? Did you perform any operations on the data to tidy, adjust, or change the form of the data? If so, why did you do this?
-There are some left skewed distribution in the data, so I did some transformation or limitation to the x scale to make it normal distribution.
-
-
 # Bivariate Plots Section
-```{r echo=FALSE, Bivariate_Plots}
+```{r echo=FALSE, Bivariate_Plots, cache=TRUE}
 ggpairs(reds, 
   lower = list(continuous = wrap("points", shape = I('.'))), 
-  upper = list(combo = wrap("box", outlier.shape = I('.'))))
+  upper = list(combo = wrap("box", outlier.shape = I('.'),params=list(corSize=5))))
 ggsave('ggpairs.png')
+# 如何改变correlation 的大小？
 ```
 
 # Bivariate Analysis
 
 ### Talk about some of the relationships you observed in this part of the investigation. How did the feature(s) of interest vary with other features in the dataset?
-from the plot above it can be seen that there are variables possibly have 
+from the plot above it can be seen that there are variables possibly have strong relationship with others. For example,  the fixed.acidity have a positive relation with citric acidity and the volatile acidity have negative relation with it.
 
 ```{r}
+# fixed.acidity and citric.acid
+acidity1 <- ggplot(reds,aes(citric.acid,fixed.acidity))+
+  geom_point(alpha = 0.3)+
+  geom_smooth(method = "lm")+
+  ggtitle("Fixed Acidity and Citric Acid")
+
+# volatile.acidity and citric.acid
+acidity2 <- ggplot(reds,aes(citric.acid,volatile.acidity))+
+  geom_point(alpha = 0.3)+
+  geom_smooth(method="lm")+
+  ggtitle("Volatile Acidity and Citric Acid")
+
+grid.arrange(acidity1,acidity2)
+```
+
+
+```{r echo=FALSE}
 # boxplot of fixed acidity by quality
-ggplot(aes(quality,fixed.acidity), data = reds_f)+
-  geom_boxplot()
+ggplot(aes(factor(quality),fixed.acidity), data = reds)+
+  geom_boxplot()+
+  labs(title="Quality and Fixed Acidity", x = "quality", y="fixed.acidity")
 ```
 
-```{r}
+```{r echo =FALSE}
 # boxplot of volatile acidity by quality
-ggplot(aes(quality,volatile.acidity), data = reds_f)+
-  geom_boxplot()
+ggplot(aes(factor(quality),volatile.acidity), data = reds)+
+  geom_boxplot()+
+  labs(title="Volatile Acidity by Quality", x="quality")
 ```
 
-### Did you observe any interesting relationships between the other features (not the main feature(s) of interest)?
 
-### What was the strongest relationship you found?
+### Strongest relationship I found
+The strongest relationship was beween the volatile acidity and quality. The correlation between these two variables is -0.39, higher than any other variable, witch suggests that wine with higher quality often have higher volatile acidity.
+```{r}
+
+qcor <- function(x){
+  with(reds,cor.test(quality,x))
+}
+
+qcor(reds$volatile.acidity)
+qcor(reds$fixed.acidity)
+qcor(reds$citric.acid)
+qcor(reds$sulfur.dioxide.per)
+qcor(reds$free.sulfur.dioxide)
+qcor(reds$sulfur.dioxide.per)
+qcor(reds$sulphates)
+qcor(reds$acidity.ratio)
+qcor(reds$density)
+```
 
 
+```{r echo =FALSE}
+# boxplot of volatile acidity by quality
+ggplot(aes(factor(quality),acidity.ratio), data = reds)+
+  geom_boxplot()+
+  labs(title="Acidity Ratio by Quality", x="quality")
+```
 
+```{r echo =FALSE}
+# point plot of volatile acidity by quality
+ggplot(aes(quality,volatile.acidity), data = reds)+
+  geom_point(position = "jitter",alpha = 0.3, color = "green")+
+  labs(title="Volatile Acidity and Mean by Quality", x="quality")+
+  geom_line(stat="summary",fun.y = mean, color = "orange")
+```
 
 # Multivariate Plots Section
 
@@ -143,6 +208,7 @@ ggplot(aes(quality,volatile.acidity), data = reds_f)+
 # Multivariate Analysis
 
 ### Talk about some of the relationships you observed in this part of the investigation. Were there features that strengthened each other in terms of looking at your feature(s) of interest?
+
 
 ### Were there any interesting or surprising interactions between features?
 
