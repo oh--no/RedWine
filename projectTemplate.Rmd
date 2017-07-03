@@ -38,7 +38,7 @@ reds_f$quality <- as.factor(reds_f$quality)
 # Univariate Analysis
 
 ### Dataset structure
-First thing I noticed is that all the variables are numerical variables, there is no factor variable. 
+The red wine dataset has 1599 observations and 12 features(fixed.acidity, volatile.acidity, citric.acid, residual.sugar, chlorides, free.sulfur.dioxide, total.sulfur.dioxide, density, pH, sulphates, alcohol, quality). First thing I noticed is that all the variables are numerical variables, there is no factor variable. Second thing is that the quality variable is int and the range is from 3 to 8 and has 5 degrees. So it can be transfered to a factor variable.
 ```{r echo=FALSE}
 str(reds)
 summary(reds)
@@ -86,8 +86,6 @@ sugar2 <- ggplot(aes(residual.sugar),data=reds)+
 grid.arrange(sugar1,sugar2)
 ```
 
-
-
 ```{r echo=FALSE}
 # distribute of chlorides
 chlorides1 <- ggplot(aes(chlorides),data = reds)+
@@ -124,7 +122,7 @@ ggpairs(reds,
   lower = list(continuous = wrap("points", shape = I('.'))), 
   upper = list(combo = wrap("box", outlier.shape = I('.'),params=list(corSize=5))))
 ggsave('ggpairs.png')
-# 如何改变correlation 的大小？
+# How to adjust the size of correlation???
 ```
 
 # Bivariate Analysis
@@ -183,20 +181,14 @@ qcor(reds$acidity.ratio)
 qcor(reds$density)
 ```
 
-
-```{r echo =FALSE}
-# boxplot of volatile acidity by quality
-ggplot(aes(factor(quality),acidity.ratio), data = reds)+
-  geom_boxplot()+
-  labs(title="Acidity Ratio by Quality", x="quality")
-```
-
+Below is a graph showing the relationship between volatile acidity and quality. The orange line is the mean of volatile acidity.
 ```{r echo =FALSE}
 # point plot of volatile acidity by quality
 ggplot(aes(quality,volatile.acidity), data = reds)+
   geom_point(position = "jitter",alpha = 0.3, color = "green")+
+  geom_line(stat="summary",fun.y = mean, color = "orange")+
   labs(title="Volatile Acidity and Mean by Quality", x="quality")+
-  geom_line(stat="summary",fun.y = mean, color = "orange")
+  scale_x_continuous(breaks = seq(3,8,1))
 ```
 
 # Multivariate Plots Section
@@ -213,6 +205,8 @@ ggplot(aes(quality,volatile.acidity), data = reds)+
 ### Were there any interesting or surprising interactions between features?
 
 ### OPTIONAL: Did you create any models with your dataset? Discuss the strengths and limitations of your model.
+
+
 
 ------
 
@@ -244,3 +238,9 @@ ggplot(aes(quality,volatile.acidity), data = reds)+
 ------
 
 # Reflection
+
+
+
+# Reference
+https://s3.amazonaws.com/content.udacity-data.com/courses/ud651/diamondsExample_2016-05.html
+https://s3.amazonaws.com/udacity-hosted-downloads/ud651/GeographyOfAmericanMusic.html
