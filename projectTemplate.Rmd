@@ -120,7 +120,7 @@ reds$sulfur.dioxide.per <- reds$free.sulfur.dioxide/reds$total.sulfur.dioxide
 ```{r echo=FALSE, Bivariate_Plots, cache=TRUE}
 ggpairs(reds, 
   lower = list(continuous = wrap("points", shape = I('.'))), 
-  upper = list(combo = wrap("box", outlier.shape = I('.'),params=list(corSize=5))))
+  upper = list(combo = wrap("box", outlier.shape = I('.'))))
 ggsave('ggpairs.png')
 # How to adjust the size of correlation???
 ```
@@ -188,6 +188,10 @@ qcor(reds$volatile.acidity)
 with(reds,cor.test(fixed.acidity,pH))
 #with(reds,cor.test(fixed.acidity,citric.acid))
 #with(reds,cor.test(volatile.acidity,citric.acid))
+```
+```{r echo=FALSE}
+ggcorr(reds, hjust = 1, size = 3, color = "grey50",
+       palette = "RdGy", label = TRUE, label_size = 3, label_color = "black")
 ```
 
 Below is a graph showing the relationship between volatile acidity and quality. The orange line is the mean of volatile acidity.
@@ -287,3 +291,5 @@ This graph shows that the quality of red wine is highly related with both volati
 # Reference
 https://s3.amazonaws.com/content.udacity-data.com/courses/ud651/diamondsExample_2016-05.html
 https://s3.amazonaws.com/udacity-hosted-downloads/ud651/GeographyOfAmericanMusic.html
+
+
