@@ -163,7 +163,9 @@ ggplot(aes(factor(quality),volatile.acidity), data = reds)+
 
 
 ### Strongest relationship I found
-The strongest relationship was beween the volatile acidity and quality. The correlation between these two variables is -0.39, higher than any other variable, witch suggests that wine with higher quality often have higher volatile acidity.
+
+The strongest relationship was beween the fixed.acidity and pH according to Pearson correlation tests which indicated a correlation of -0.68.
+The strongest correlatiion about red wine quality is that between volatile acidity and quality. The correlation between these two variables is -0.39, higher than any other variable, witch suggests that wine with higher quality often have higher volatile acidity.
 ```{r}
 
 qcor <- function(x){
@@ -171,14 +173,21 @@ qcor <- function(x){
 }
 
 qcor(reds$volatile.acidity)
-qcor(reds$fixed.acidity)
-qcor(reds$citric.acid)
-qcor(reds$sulfur.dioxide.per)
-qcor(reds$free.sulfur.dioxide)
-qcor(reds$sulfur.dioxide.per)
-qcor(reds$sulphates)
-qcor(reds$acidity.ratio)
-qcor(reds$density)
+#qcor(reds$fixed.acidity)
+#qcor(reds$citric.acid)
+#qcor(reds$sulfur.dioxide.per)
+#qcor(reds$free.sulfur.dioxide)
+#qcor(reds$sulfur.dioxide.per)
+#qcor(reds$sulphates)
+#qcor(reds$acidity.ratio)
+#qcor(reds$density)
+#qcor(reds$alcohol)
+#qcor(reds$pH)
+
+#with(reds,cor.test(fixed.acidity,density))
+with(reds,cor.test(fixed.acidity,pH))
+#with(reds,cor.test(fixed.acidity,citric.acid))
+#with(reds,cor.test(volatile.acidity,citric.acid))
 ```
 
 Below is a graph showing the relationship between volatile acidity and quality. The orange line is the mean of volatile acidity.
@@ -194,19 +203,50 @@ ggplot(aes(quality,volatile.acidity), data = reds)+
 # Multivariate Plots Section
 
 ```{r echo=FALSE, Multivariate_Plots}
+# ggplot(reds,aes(quality,volatile.acidity,size=citric.acid))+
+#   geom_point(alpha = 0.3, position = "jitter")
 
+ggplot(reds,aes(alcohol,volatile.acidity,color = factor(reds$quality)))+
+  geom_point(alpha = 0.3)+
+  scale_color_brewer(type="seq",palette = "YlOrRd")+
+  labs(title="Volatile.acidity, Alcohol and Quality")
 ```
 
 # Multivariate Analysis
 
 ### Talk about some of the relationships you observed in this part of the investigation. Were there features that strengthened each other in terms of looking at your feature(s) of interest?
-
+There were features like fixed.acidity and citric.acid strengthened each other. The dataset generally suggests that the more citric acid there are in the wine, the more fixed acidity the wine has. 
 
 ### Were there any interesting or surprising interactions between features?
+The most interest interaction is between the alcohol and quality. I figured the wine quality does not have connection with alcohol, but it turned out most of the high quality wine has higher degree of alcohol.
 
 ### OPTIONAL: Did you create any models with your dataset? Discuss the strengths and limitations of your model.
+I created a model to predict the red winn quality with two most related features volatile and alcohol. The model is  
+**quality = volatile.acidity*-1.3836 + alcohol * 0.3138**
+The strength is that it only needs two features to predict the quality. The limitation is that it is obviously 
+```{r echo=FALSE}
+m1 <- lm(quality ~ volatile.acidity + alcohol, data = reds)
+m1
+```
 
+I also tried to predict the quality with all the features.
+```{r}
+m1 <- lm(quality ~ fixed.acidity, data = reds)
+m2 <- update(m1, ~.+volatile.acidity)
+m3 <- update(m2, ~.+citric.acid)
+m4 <- update(m3, ~.+residual.sugar)
+m5 <- update(m4, ~.+chlorides)
+m6 <- update(m5, ~.+free.sulfur.dioxide)
+m7 <- update(m6, ~.+total.sulfur.dioxide)
+m8 <- update(m7, ~.+density)
+m9 <- update(m8, ~.+pH)
+m10 <- update(m9, ~.+sulphates)
+m11 <- update(m10, ~.+alcohol)
+m12 <- update(m11, ~.+acidity.ratio)
+m13 <- update(m12, ~.+sulfur.dioxide.per)
 
+mtable(m1,m2,m3,m4,m5,m6,m7,m8,m9,m10,m11,m12,m13)
+```
 
 ------
 
@@ -230,11 +270,14 @@ ggplot(aes(quality,volatile.acidity), data = reds)+
 
 ### Plot Three
 ```{r echo=FALSE, Plot_Three}
-
+ggplot(reds,aes(alcohol,volatile.acidity,color = factor(reds$quality)))+
+  geom_point(alpha = 0.3)+
+  scale_color_brewer(type="seq",palette = "YlOrRd")+
+  labs(title="Volatile.acidity, Alcohol and Quality")
 ```
 
 ### Description Three
-
+This graph shows that the quality of red wine is highly related with both volatile acidity and alcohol. The yellow dots are on the top-left and dark red are on the bottom-right.
 ------
 
 # Reflection
