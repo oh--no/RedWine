@@ -49,10 +49,12 @@ Most of the variables have normal distribution, but many of them are left skewed
 ```{r echo=FALSE}
 # distribute of acidity
 ggplot(aes(fixed.acidity),data=reds)+
-  geom_histogram(binwidth = 0.1)+
+  geom_histogram(binwidth = 0.1, color = "green", fill = "green", alpha = 0.5)+
   scale_x_continuous(breaks = seq(4,16,1))+
-  labs(title = "Distribute of Fixed Acidity", x= "fixed acidity")
+  labs(title = "Distribute of Fixed Acidity", x= "fixed acidity")+
+  theme_classic()
 ```
+This graph shows the acidity distribution of red wind. It is a normal distribution.
 
 ```{r}
 # frequency polygon of volatile acidity.
@@ -61,6 +63,7 @@ ggplot(aes(volatile.acidity),data=reds)+
   scale_x_continuous(breaks = seq(0,1.7,0.1))+
   labs(title = "Frequency Polygon of Volatile Acidity", x = "volatile acidity")
 ```
+This frequency polygon indicates that the volatile acidity distribution is also normal distribution.
 
 ```{r}
 # normal distribution of quality.
@@ -69,6 +72,7 @@ ggplot(aes(quality), data = reds)+
   scale_x_continuous(breaks = seq(3,8,1))+
   labs(title = "Normal Distribution of Quality", x = "quality")
 ```
+Quality is also a normal distribution.
 
 ```{r echo= FALSE}
 # left skewed distribution of residual sugar.
@@ -85,6 +89,7 @@ sugar2 <- ggplot(aes(residual.sugar),data=reds)+
 
 grid.arrange(sugar1,sugar2)
 ```
+Reisdual sugar is a left skewed, so I transfered the x axis to make it a normal distribution.
 
 ```{r echo=FALSE}
 # distribute of chlorides
@@ -101,6 +106,7 @@ chlorides2 <- ggplot(aes(chlorides),data = reds)+
 
 grid.arrange(chlorides1, chlorides2)
 ```
+Chlorides is also a left skewed distribution, a log10 transformation of the x axis can make it normal.
 
 ### New variables are created.
 I created two new variables:
@@ -145,7 +151,7 @@ acidity2 <- ggplot(reds,aes(citric.acid,volatile.acidity))+
 
 grid.arrange(acidity1,acidity2)
 ```
-
+From the plot above we can see that the fixed.acidity has a positive relationship with citric.acid, and volatile.acidity has a negative relationship with citric.acid. 
 
 ```{r echo=FALSE}
 # boxplot of fixed acidity by quality
@@ -153,6 +159,7 @@ ggplot(aes(factor(quality),fixed.acidity), data = reds)+
   geom_boxplot()+
   labs(title="Quality and Fixed Acidity", x = "quality", y="fixed.acidity")
 ```
+The box plot shows some relationship between the quality and fixed.acidity, but not very strong.
 
 ```{r echo =FALSE}
 # boxplot of volatile acidity by quality
@@ -160,7 +167,14 @@ ggplot(aes(factor(quality),volatile.acidity), data = reds)+
   geom_boxplot()+
   labs(title="Volatile Acidity by Quality", x="quality")
 ```
+The relationship between quality and volatile acidity is clearly stronger.
 
+```{r echo=FALSE}
+ggplot(reds,aes(factor(quality),alcohol))+
+  geom_boxplot()+
+  labs(title="Alcohol and Quality",x="Quality")
+```
+The alcohol also has a visible relationship with quality. High quality red wine often has higher degree of alcohol.
 
 ### Strongest relationship I found
 
@@ -193,6 +207,13 @@ with(reds,cor.test(fixed.acidity,pH))
 ggcorr(reds, hjust = 1, size = 3, color = "grey50",
        palette = "RdGy", label = TRUE, label_size = 3, label_color = "black")
 ```
+The plot above shows the most related features. 
+0.7 fixed.acidity & citric.acid
+0.7 fixed.acidity & density
+-0.7 fixed.acidity & sulphates
+-0.6 volatile.acidity & citric.acid
+0.5 quality & alcohol
+
 
 Below is a graph showing the relationship between volatile acidity and quality. The orange line is the mean of volatile acidity.
 ```{r echo =FALSE}
@@ -258,35 +279,46 @@ mtable(m1,m2,m3,m4,m5,m6,m7,m8,m9,m10,m11,m12,m13)
 
 ### Plot One
 ```{r echo=FALSE, Plot_One}
-
+# distribute of acidity
+ggplot(aes(fixed.acidity),data=reds)+
+  geom_histogram(binwidth = 0.1, color = "green", fill = "green", alpha = 0.7)+
+  scale_x_continuous(breaks = seq(4,16,1))+
+  labs(title = "Distribute of Fixed Acidity", x= "fixed acidity")+
+  theme_classic()
 ```
 
-### Description One
-
+### Description One  
+This plot shows the distribution of fixed acidity. It is almost a perfect bell shaped normal distribution. Most of the red wind have fixed acidity below 10.
 
 ### Plot Two
 ```{r echo=FALSE, Plot_Two}
-
+# point plot of volatile acidity by quality
+ggplot(aes(quality,volatile.acidity), data = reds)+
+  geom_point(position = "jitter",alpha = 0.5, color = "green")+
+  geom_line(stat="summary",fun.y = mean, color = "orange")+
+  labs(title="Volatile Acidity and Mean by Quality", x="Quality", y="")+
+  scale_x_continuous(breaks = seq(3,8,1))
 ```
 
-### Description Two
-
+### Description Two  
+This plot shows that red wine with higher quality often has lower degree of volatile acidity. This plot is an evidence of relationship between volatile acid and red wine quality.
 
 ### Plot Three
 ```{r echo=FALSE, Plot_Three}
 ggplot(reds,aes(alcohol,volatile.acidity,color = factor(reds$quality)))+
   geom_point(alpha = 0.3)+
   scale_color_brewer(type="seq",palette = "YlOrRd")+
-  labs(title="Volatile.acidity, Alcohol and Quality")
+  labs(title="Volatile.acidity, Alcohol and Quality", x = "Alcohol", y="Volatile Acidity", color = "Quality")+
+  theme_dark()
 ```
 
-### Description Three
+### Description Three  
 This graph shows that the quality of red wine is highly related with both volatile acidity and alcohol. The yellow dots are on the top-left and dark red are on the bottom-right.
 ------
 
 # Reflection
-
-
+If I have time to do this project again I would have chosen a larger dataset with more complex data structure. The features of this dataset are almost all numerical variables with only one variable (quality) can be seen as an ordered factor variable. This is a limitation for me to explore more possibilities. Another thing I should done better was creating new variables. The two variable I created turned out are not more useful than others. 
+Finally, although the relationship between alcohol and quality surprised me, I have to say I did not find anything as interesting as I expected.
 
 # Reference
 https://s3.amazonaws.com/content.udacity-data.com/courses/ud651/diamondsExample_2016-05.html

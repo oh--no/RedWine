@@ -1,0 +1,323 @@
+---
+title: "A study of red wine"
+author: "Hao Su"
+date: "2017/6/29"
+output: html_document
+---
+
+========================================================
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
+# Load all of the packages that you end up using
+# in your analysis in this code chunk.
+
+# Notice that the parameter "echo" was set to FALSE for this code chunk.
+# This prevents the code from displaying in the knitted HTML output.
+# You should set echo=FALSE for all code chunks in your file.
+
+library(ggplot2)
+library(GGally)
+library(scales)
+library(memisc)
+library(gridExtra)
+```
+
+```{r echo=FALSE, Load_the_Data}
+# Load the Data
+reds <- read.csv('wineQualityReds.csv')
+reds <- reds[,-1]
+reds_f <- reds
+reds_f$quality <- as.factor(reds_f$quality)
+```
+
+# Univariate Plots Section
+```{r echo=FALSE, Univariate_Plots}
+
+```
+
+# Univariate Analysis
+
+### Dataset structure
+The red wine dataset has 1599 observations and 12 features(fixed.acidity, volatile.acidity, citric.acid, residual.sugar, chlorides, free.sulfur.dioxide, total.sulfur.dioxide, density, pH, sulphates, alcohol, quality). First thing I noticed is that all the variables are numerical variables, there is no factor variable. Second thing is that the quality variable is int and the range is from 3 to 8 and has 5 degrees. So it can be transfered to a factor variable.
+```{r echo=FALSE}
+str(reds)
+summary(reds)
+```
+### Main features of interest in the red wine dataset
+There are some variables with great gap between the minimum and max values. I will probably trim the outliers when visualizing these variables.
+Most of the variables have normal distribution, but many of them are left skewed. I will do some tranformation when visualizing so they can be bell shaped. These distribution can be a help to my analysis because they all comply to the normal distribution.
+```{r echo=FALSE}
+# distribute of acidity
+ggplot(aes(fixed.acidity),data=reds)+
+  geom_histogram(binwidth = 0.1, color = "green", fill = "green", alpha = 0.5)+
+  scale_x_continuous(breaks = seq(4,16,1))+
+  labs(title = "Distribute of Fixed Acidity", x= "fixed acidity")+
+  theme_classic()
+```
+This graph shows the acidity distribution of red wind. It is a normal distribution.
+
+```{r}
+# frequency polygon of volatile acidity.
+ggplot(aes(volatile.acidity),data=reds)+
+  geom_freqpoly(binwidth = 0.03)+
+  scale_x_continuous(breaks = seq(0,1.7,0.1))+
+  labs(title = "Frequency Polygon of Volatile Acidity", x = "volatile acidity")
+```
+This frequency polygon indicates that the volatile acidity distribution is also normal distribution.
+
+```{r}
+# normal distribution of quality.
+ggplot(aes(quality), data = reds)+
+  geom_histogram(binwidth=1)+
+  scale_x_continuous(breaks = seq(3,8,1))+
+  labs(title = "Normal Distribution of Quality", x = "quality")
+```
+Quality is also a normal distribution.
+
+```{r echo= FALSE}
+# left skewed distribution of residual sugar.
+sugar1 <- ggplot(aes(residual.sugar),data= reds)+
+  geom_histogram(binwidth = 0.1)+
+  scale_x_continuous(breaks = seq(0,16,1))+ #, limits = c(0,7))+
+  labs(title="Left Skewed Distribution of Residual Sugar", x="residual sugar")
+
+# residual sugar log10
+sugar2 <- ggplot(aes(residual.sugar),data=reds)+
+  geom_histogram(binwidth = 0.05)+
+  scale_x_log10(breaks = seq(0,16,1))+
+  labs(title="residual sugar log10", x="residual sugar")
+
+grid.arrange(sugar1,sugar2)
+```
+Reisdual sugar is a left skewed, so I transfered the x axis to make it a normal distribution.
+
+```{r echo=FALSE}
+# distribute of chlorides
+chlorides1 <- ggplot(aes(chlorides),data = reds)+
+  geom_histogram(binwidth = 0.01)+
+  scale_x_continuous(breaks = seq(0,3,0.1))+
+  labs(title = "Chlorides Distribution", x = "Chlorides")
+
+# chlorides distribution log10
+chlorides2 <- ggplot(aes(chlorides),data = reds)+
+  geom_histogram(binwidth = 0.05)+
+  scale_x_log10(breaks = seq(0,3,0.1))+
+  labs(title = "Chlorides Distribution log10", x = "Chlorides")
+
+grid.arrange(chlorides1, chlorides2)
+```
+Chlorides is also a left skewed distribution, a log10 transformation of the x axis can make it normal.
+
+### New variables are created.
+I created two new variables:
+1. the ratio of fixed acidity and volatile acidity. *fixed.acidity/volatile.acidity*
+2. the percentage of free sulfur dioxide. *free.sulfur.dioxide/total.sulfur.dioxide*
+
+```{r echo=FALSE}
+# acidity ratio
+reds$acidity.ratio <- reds$fixed.acidity/reds$volatile.acidity
+
+# free sulfur dioxide percentage
+reds$sulfur.dioxide.per <- reds$free.sulfur.dioxide/reds$total.sulfur.dioxide
+```
+
+
+# Bivariate Plots Section
+```{r echo=FALSE, Bivariate_Plots, cache=TRUE}
+ggpairs(reds, 
+  lower = list(continuous = wrap("points", shape = I('.'))), 
+  upper = list(combo = wrap("box", outlier.shape = I('.'))))
+ggsave('ggpairs.png')
+# How to adjust the size of correlation???
+```
+
+# Bivariate Analysis
+
+### Talk about some of the relationships you observed in this part of the investigation. How did the feature(s) of interest vary with other features in the dataset?
+from the plot above it can be seen that there are variables possibly have strong relationship with others. For example,  the fixed.acidity have a positive relation with citric acidity and the volatile acidity have negative relation with it.
+
+```{r}
+# fixed.acidity and citric.acid
+acidity1 <- ggplot(reds,aes(citric.acid,fixed.acidity))+
+  geom_point(alpha = 0.3)+
+  geom_smooth(method = "lm")+
+  ggtitle("Fixed Acidity and Citric Acid")
+
+# volatile.acidity and citric.acid
+acidity2 <- ggplot(reds,aes(citric.acid,volatile.acidity))+
+  geom_point(alpha = 0.3)+
+  geom_smooth(method="lm")+
+  ggtitle("Volatile Acidity and Citric Acid")
+
+grid.arrange(acidity1,acidity2)
+```
+From the plot above we can see that the fixed.acidity has a positive relationship with citric.acid, and volatile.acidity has a negative relationship with citric.acid. 
+
+```{r echo=FALSE}
+# boxplot of fixed acidity by quality
+ggplot(aes(factor(quality),fixed.acidity), data = reds)+
+  geom_boxplot()+
+  labs(title="Quality and Fixed Acidity", x = "quality", y="fixed.acidity")
+```
+The box plot shows some relationship between the quality and fixed.acidity, but not very strong.
+
+```{r echo =FALSE}
+# boxplot of volatile acidity by quality
+ggplot(aes(factor(quality),volatile.acidity), data = reds)+
+  geom_boxplot()+
+  labs(title="Volatile Acidity by Quality", x="quality")
+```
+The relationship between quality and volatile acidity is clearly stronger.
+
+```{r echo=FALSE}
+ggplot(reds,aes(factor(quality),alcohol))+
+  geom_boxplot()+
+  labs(title="Alcohol and Quality",x="Quality")
+```
+The alcohol also has a visible relationship with quality. High quality red wine often has higher degree of alcohol.
+
+### Strongest relationship I found
+
+The strongest relationship was beween the fixed.acidity and pH according to Pearson correlation tests which indicated a correlation of -0.68.
+The strongest correlatiion about red wine quality is that between volatile acidity and quality. The correlation between these two variables is -0.39, higher than any other variable, witch suggests that wine with higher quality often have higher volatile acidity.
+```{r}
+
+qcor <- function(x){
+  with(reds,cor.test(quality,x))
+}
+
+qcor(reds$volatile.acidity)
+#qcor(reds$fixed.acidity)
+#qcor(reds$citric.acid)
+#qcor(reds$sulfur.dioxide.per)
+#qcor(reds$free.sulfur.dioxide)
+#qcor(reds$sulfur.dioxide.per)
+#qcor(reds$sulphates)
+#qcor(reds$acidity.ratio)
+#qcor(reds$density)
+#qcor(reds$alcohol)
+#qcor(reds$pH)
+
+#with(reds,cor.test(fixed.acidity,density))
+with(reds,cor.test(fixed.acidity,pH))
+#with(reds,cor.test(fixed.acidity,citric.acid))
+#with(reds,cor.test(volatile.acidity,citric.acid))
+```
+```{r echo=FALSE}
+ggcorr(reds, hjust = 1, size = 3, color = "grey50",
+       palette = "RdGy", label = TRUE, label_size = 3, label_color = "black")
+```
+The plot above shows the most related features. 
+0.7 fixed.acidity & citric.acid
+0.7 fixed.acidity & density
+-0.7 fixed.acidity & sulphates
+-0.6 volatile.acidity & citric.acid
+0.5 quality & alcohol
+
+
+Below is a graph showing the relationship between volatile acidity and quality. The orange line is the mean of volatile acidity.
+```{r echo =FALSE}
+# point plot of volatile acidity by quality
+ggplot(aes(quality,volatile.acidity), data = reds)+
+  geom_point(position = "jitter",alpha = 0.3, color = "green")+
+  geom_line(stat="summary",fun.y = mean, color = "orange")+
+  labs(title="Volatile Acidity and Mean by Quality", x="quality")+
+  scale_x_continuous(breaks = seq(3,8,1))
+```
+
+# Multivariate Plots Section
+
+```{r echo=FALSE, Multivariate_Plots}
+# ggplot(reds,aes(quality,volatile.acidity,size=citric.acid))+
+#   geom_point(alpha = 0.3, position = "jitter")
+
+ggplot(reds,aes(alcohol,volatile.acidity,color = factor(reds$quality)))+
+  geom_point(alpha = 0.3)+
+  scale_color_brewer(type="seq",palette = "YlOrRd")+
+  labs(title="Volatile.acidity, Alcohol and Quality")
+```
+
+# Multivariate Analysis
+
+### Talk about some of the relationships you observed in this part of the investigation. Were there features that strengthened each other in terms of looking at your feature(s) of interest?
+There were features like fixed.acidity and citric.acid strengthened each other. The dataset generally suggests that the more citric acid there are in the wine, the more fixed acidity the wine has. 
+
+### Were there any interesting or surprising interactions between features?
+The most interest interaction is between the alcohol and quality. I figured the wine quality does not have connection with alcohol, but it turned out most of the high quality wine has higher degree of alcohol.
+
+### OPTIONAL: Did you create any models with your dataset? Discuss the strengths and limitations of your model.
+I created a model to predict the red winn quality with two most related features volatile and alcohol. The model is  
+**quality = volatile.acidity*-1.3836 + alcohol * 0.3138**
+The strength is that it only needs two features to predict the quality. The limitation is that it is obviously 
+```{r echo=FALSE}
+m1 <- lm(quality ~ volatile.acidity + alcohol, data = reds)
+m1
+```
+
+I also tried to predict the quality with all the features.
+```{r}
+m1 <- lm(quality ~ fixed.acidity, data = reds)
+m2 <- update(m1, ~.+volatile.acidity)
+m3 <- update(m2, ~.+citric.acid)
+m4 <- update(m3, ~.+residual.sugar)
+m5 <- update(m4, ~.+chlorides)
+m6 <- update(m5, ~.+free.sulfur.dioxide)
+m7 <- update(m6, ~.+total.sulfur.dioxide)
+m8 <- update(m7, ~.+density)
+m9 <- update(m8, ~.+pH)
+m10 <- update(m9, ~.+sulphates)
+m11 <- update(m10, ~.+alcohol)
+m12 <- update(m11, ~.+acidity.ratio)
+m13 <- update(m12, ~.+sulfur.dioxide.per)
+
+mtable(m1,m2,m3,m4,m5,m6,m7,m8,m9,m10,m11,m12,m13)
+```
+
+------
+
+# Final Plots and Summary
+
+### Plot One
+```{r echo=FALSE, Plot_One}
+# distribute of acidity
+ggplot(aes(fixed.acidity),data=reds)+
+  geom_histogram(binwidth = 0.1, color = "green", fill = "green", alpha = 0.7)+
+  scale_x_continuous(breaks = seq(4,16,1))+
+  labs(title = "Distribute of Fixed Acidity", x= "fixed acidity")+
+  theme_classic()
+```
+
+### Description One  
+This plot shows the distribution of fixed acidity. It is almost a perfect bell shaped normal distribution. Most of the red wind have fixed acidity below 10.
+
+### Plot Two
+```{r echo=FALSE, Plot_Two}
+# point plot of volatile acidity by quality
+ggplot(aes(quality,volatile.acidity), data = reds)+
+  geom_point(position = "jitter",alpha = 0.5, color = "green")+
+  geom_line(stat="summary",fun.y = mean, color = "orange")+
+  labs(title="Volatile Acidity and Mean by Quality", x="Quality", y="")+
+  scale_x_continuous(breaks = seq(3,8,1))
+```
+
+### Description Two  
+This plot shows that red wine with higher quality often has lower degree of volatile acidity. This plot is an evidence of relationship between volatile acid and red wine quality.
+
+### Plot Three
+```{r echo=FALSE, Plot_Three}
+ggplot(reds,aes(alcohol,volatile.acidity,color = factor(reds$quality)))+
+  geom_point(alpha = 0.3)+
+  scale_color_brewer(type="seq",palette = "YlOrRd")+
+  labs(title="Volatile.acidity, Alcohol and Quality", x = "Alcohol", y="Volatile Acidity", color = "Quality")+
+  theme_dark()
+```
+
+### Description Three  
+This graph shows that the quality of red wine is highly related with both volatile acidity and alcohol. The yellow dots are on the top-left and dark red are on the bottom-right.
+------
+
+# Reflection
+If I have time to do this project again I would have chosen a larger dataset with more complex data structure. The features of this dataset are almost all numerical variables with only one variable (quality) can be seen as an ordered factor variable. This is a limitation for me to explore more possibilities. Another thing I should done better was creating new variables. The two variable I created turned out are not more useful than others. 
+Finally, although the relationship between alcohol and quality surprised me, I have to say I did not find anything as interesting as I expected.
+
+
