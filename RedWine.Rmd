@@ -367,7 +367,7 @@ The plot shows that red wine with higher quality often has lower degree of volat
 ```{r echo=FALSE, Plot_Three}
 ggplot(reds,aes(alcohol,volatile.acidity,color = factor(reds$quality)))+
   geom_point(alpha = 0.3)+
-  scale_color_brewer(type="seq",palette = "YlOrRd")+
+  scale_color_brewer(type="seq",palette = "Reds")+
   labs(title="Volatile.acidity, Alcohol and Quality", x = "Alcohol(%)", y="Volatile Acidity(g / dm^3)", color = "Quality")+
   theme_dark()
 ```
